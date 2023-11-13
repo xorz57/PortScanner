@@ -9,19 +9,14 @@
 bool isPortOpen(const std::string &host, unsigned short port) {
     try {
         using boost::asio::ip::tcp;
-
         boost::asio::io_context io_context;
-
         tcp::socket socket(io_context);
-
         tcp::resolver resolver(io_context);
         tcp::resolver::query query(host, std::to_string(port));
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-
         boost::asio::connect(socket, endpoint_iterator);
-
         return true;
-    } catch (const std::exception &) {
+    } catch (const boost::system::system_error &) {
         return false;
     }
 }
@@ -58,16 +53,16 @@ int main(int argc, char *argv[]) {
     for (unsigned short port = beginPort; port <= endPort; ++port) {
         futures.push_back(std::async(std::launch::async, [host, port, &mutex]() {
             if (isPortOpen(host, port)) {
-                std::lock_guard<std::mutex> lock(mutex);
+                std::lock_guard lock(mutex);
                 std::cout << "Port " << port << " is open." << std::endl;
             } else {
-                std::lock_guard<std::mutex> lock(mutex);
+                std::lock_guard lock(mutex);
                 std::cout << "Port " << port << " is closed." << std::endl;
             }
         }));
     }
 
-    for (auto &future: futures) {
+    for (const auto &future: futures) {
         future.wait();
     }
 
