@@ -1,7 +1,10 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 
+#include <future>
 #include <iostream>
+#include <mutex>
+#include <vector>
 
 bool isPortOpen(const std::string &host, unsigned short port) {
     try {
@@ -40,21 +43,32 @@ int main(int argc, char *argv[]) {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (!vm.count("host")) return 1;
+    if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
+        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port>\n";
+        return 1;
+    }
+
     const std::string host = vm["host"].as<std::string>();
-
-    if (!vm.count("begin-port")) return 1;
     const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
-
-    if (!vm.count("end-port")) return 1;
     const unsigned short endPort = vm["end-port"].as<unsigned short>();
 
+    std::vector<std::future<void>> futures;
+    std::mutex mutex;
+
     for (unsigned short port = beginPort; port <= endPort; ++port) {
-        if (isPortOpen(host, port)) {
-            std::cout << "Port " << port << " is open." << std::endl;
-        } else {
-            std::cout << "Port " << port << " is closed." << std::endl;
-        }
+        futures.push_back(std::async(std::launch::async, [host, port, &mutex]() {
+            if (isPortOpen(host, port)) {
+                std::lock_guard<std::mutex> lock(mutex);
+                std::cout << "Port " << port << " is open." << std::endl;
+            } else {
+                std::lock_guard<std::mutex> lock(mutex);
+                std::cout << "Port " << port << " is closed." << std::endl;
+            }
+        }));
+    }
+
+    for (auto &future: futures) {
+        future.wait();
     }
 
     return 0;
