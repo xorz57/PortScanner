@@ -36,8 +36,14 @@ int main(int argc, char *argv[]) {
     // clang-format on
 
     po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
         std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all]" << std::endl;
@@ -45,9 +51,19 @@ int main(int argc, char *argv[]) {
     }
 
     const std::string host = vm["host"].as<std::string>();
+
     const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
     const unsigned short endPort = vm["end-port"].as<unsigned short>();
+    if (beginPort > endPort) {
+        std::cerr << "Error: begin-port should be less than or equal to end-port." << std::endl;
+        return 1;
+    }
+
     const std::string showOption = vm["show"].as<std::string>();
+    if (showOption != "open" && showOption != "closed" && showOption != "all") {
+        std::cerr << "Error: Invalid value for --show. Use 'open', 'closed', or 'all'." << std::endl;
+        return 1;
+    }
 
     std::vector<std::future<void>> futures;
     std::mutex mutex;
