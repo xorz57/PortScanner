@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     po::notify(vm);
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
-        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port>\n";
+        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port>" << std::endl;
         return 1;
     }
 
