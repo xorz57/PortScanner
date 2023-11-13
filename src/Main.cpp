@@ -28,9 +28,10 @@ int main(int argc, char *argv[]) {
 
     // clang-format off
     desc.add_options()
-        ("host", po::value<std::string>()->required(), "set host")
-        ("begin-port", po::value<unsigned short>()->required(), "set begin-port")
-        ("end-port", po::value<unsigned short>()->required(), "set end-port")
+        ("help", "display help message")
+        ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
+        ("begin-port", po::value<unsigned short>()->default_value(0), "set begin-port")
+        ("end-port", po::value<unsigned short>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
@@ -40,9 +41,14 @@ int main(int argc, char *argv[]) {
     try {
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);
-    } catch (const std::exception &e) {
+    } catch (const po::error &e) {
         std::cerr << e.what() << std::endl;
         return 1;
+    }
+
+    if (vm.empty() || vm.count("help")) {
+        std::cout << desc << std::endl;
+        return 0;
     }
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
@@ -54,8 +60,8 @@ int main(int argc, char *argv[]) {
 
     const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
     const unsigned short endPort = vm["end-port"].as<unsigned short>();
-    if (beginPort > endPort) {
-        std::cerr << "Error: begin-port should be less than or equal to end-port." << std::endl;
+    if (beginPort > endPort || endPort > 65535) {
+        std::cerr << "Error: Invalid port range. begin-port should be less than or equal to end-port, and both should be in the range [0, 65535]." << std::endl;
         return 1;
     }
 
@@ -69,7 +75,7 @@ int main(int argc, char *argv[]) {
     std::mutex mutex;
 
     for (unsigned short port = beginPort; port <= endPort; ++port) {
-        futures.push_back(std::async(std::launch::async, [host, port, &mutex, showOption]() {
+        futures.emplace_back(std::async(std::launch::async, [showOption, host, port, &mutex]() {
             bool status = isPortOpen(host, port);
             std::lock_guard lock(mutex);
             if ((showOption == "open" && status) || (showOption == "closed" && !status) || (showOption == "all")) {
