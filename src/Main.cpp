@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
         ("host", po::value<std::string>()->required(), "set host")
         ("begin-port", po::value<unsigned short>()->required(), "set begin-port")
         ("end-port", po::value<unsigned short>()->required(), "set end-port")
+        ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
 
@@ -39,25 +40,24 @@ int main(int argc, char *argv[]) {
     po::notify(vm);
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
-        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all]" << std::endl;
         return 1;
     }
 
     const std::string host = vm["host"].as<std::string>();
     const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
     const unsigned short endPort = vm["end-port"].as<unsigned short>();
+    const std::string showOption = vm["show"].as<std::string>();
 
     std::vector<std::future<void>> futures;
     std::mutex mutex;
 
     for (unsigned short port = beginPort; port <= endPort; ++port) {
-        futures.push_back(std::async(std::launch::async, [host, port, &mutex]() {
-            if (isPortOpen(host, port)) {
-                std::lock_guard lock(mutex);
-                std::cout << "Port " << port << " is open." << std::endl;
-            } else {
-                std::lock_guard lock(mutex);
-                std::cout << "Port " << port << " is closed." << std::endl;
+        futures.push_back(std::async(std::launch::async, [host, port, &mutex, showOption]() {
+            bool status = isPortOpen(host, port);
+            std::lock_guard lock(mutex);
+            if ((showOption == "open" && status) || (showOption == "closed" && !status) || (showOption == "all")) {
+                std::cout << "Port " << port << " is " << (status ? "open" : "closed") << "." << std::endl;
             }
         }));
     }
