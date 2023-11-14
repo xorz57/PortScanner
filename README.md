@@ -8,7 +8,6 @@ Allowed options:
   --end-port arg (=65535) set end-port
   --show arg (=all)       display only 'open', 'closed', or 'all' ports
   --tcp                   scan TCP ports
-  --udp                   scan UDP ports
 ```
 
 ## Example
