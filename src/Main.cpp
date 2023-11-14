@@ -47,6 +47,8 @@ int main(int argc, char *argv[]) {
         ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
         ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
+        ("tcp", "scan TCP ports")
+        ("udp", "scan UDP ports")
     ;
     // clang-format on
 
@@ -85,15 +87,27 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    const bool tcpOption = vm.count("tcp");
+    const bool udpOption = vm.count("udp");
+
     std::vector<std::future<void>> futures;
     std::mutex mutex;
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
-        futures.emplace_back(std::async(std::launch::async, [showOption, host, port, &mutex]() {
-            bool tcpPortStatus = isTCPPortOpen(host, port);
-            std::lock_guard lock(mutex);
-            if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
-                std::cout << "Port " << port << " is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
+        futures.emplace_back(std::async(std::launch::async, [showOption, tcpOption, udpOption, host, port, &mutex]() {
+            if (tcpOption) {
+                bool tcpPortStatus = isTCPPortOpen(host, port);
+                if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
+                    std::lock_guard lock(mutex);
+                    std::cout << "Port " << port << "/tcp is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
+                }
+            }
+            if (udpOption) {
+                bool udpPortStatus = isUDPPortOpen(host, port);
+                if ((showOption == "open" && udpPortStatus) || (showOption == "closed" && !udpPortStatus) || (showOption == "all")) {
+                    std::lock_guard lock(mutex);
+                    std::cout << "Port " << port << "/udp is " << (udpPortStatus ? "open" : "closed") << "." << std::endl;
+                }
             }
         }));
     }
