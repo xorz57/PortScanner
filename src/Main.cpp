@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (vm.empty() || vm.count("help")) {
+    if (vm.count("help")) {
         std::cout << desc << std::endl;
         return 0;
     }
