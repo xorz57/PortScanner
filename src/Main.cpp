@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
         ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
-        ("tcp", "scan TCP ports")
+        ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
     ;
     // clang-format on
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
-        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all] [--tcp]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all] [--protocol tcp/udp]" << std::endl;
         return 1;
     }
 
@@ -71,14 +71,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const bool tcpOption = vm.count("tcp");
+    const std::string protocolOption = vm["protocol"].as<std::string>();
+    if (protocolOption != "tcp" && protocolOption != "udp") {
+        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
+        return 1;
+    }
 
     std::vector<std::future<void>> futures;
     std::mutex mutex;
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
-        futures.emplace_back(std::async(std::launch::async, [showOption, tcpOption, host, port, &mutex]() {
-            if (tcpOption) {
+        futures.emplace_back(std::async(std::launch::async, [showOption, protocolOption, host, port, &mutex]() {
+            if (protocolOption == "tcp") {
                 bool tcpPortStatus = isTCPPortOpen(host, port);
                 if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
                     std::lock_guard lock(mutex);

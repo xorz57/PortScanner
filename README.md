@@ -7,13 +7,13 @@ Allowed options:
   --begin-port arg (=0)   set begin-port
   --end-port arg (=65535) set end-port
   --show arg (=all)       display only 'open', 'closed', or 'all' ports
-  --tcp                   scan TCP ports
+  --protocol arg (=tcp)   set protocol (tcp/udp)
 ```
 
 ## Example
 
 ```
-./PortScanner --host uoc.gr --tcp --show open
+./PortScanner --host uoc.gr --show open
 Port 22 is open.
 Port 53 is open.
 Port 111 is open.
