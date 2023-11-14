@@ -32,6 +32,13 @@ Port 47603 is open.
 Port 52116 is open.
 ```
 
+## Dependencies
+
+PortScanner relies on the following libraries:
+
+- [asio](https://github.com/boostorg/asio)
+- [program_options](https://github.com/boostorg/program_options)
+
 ## How to Build using CMake
 
 ```bash
