@@ -1,6 +1,4 @@
-# PortScanner
-
-Port Scanner written in C++20
+<h1 align="center">PortScanner</h1>
 
 ```bash
 Allowed options:
