@@ -20,20 +20,6 @@ bool isTCPPortOpen(const std::string &host, unsigned int port) {
     }
 }
 
-bool isUDPPortOpen(const std::string &host, unsigned int port) {
-    try {
-        boost::asio::io_context io_context;
-        boost::asio::ip::udp::socket socket(io_context);
-        boost::asio::ip::udp::resolver resolver(io_context);
-        boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, std::to_string(port));
-        boost::asio::ip::udp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-        boost::asio::connect(socket, endpoint_iterator);
-        return true;
-    } catch (const boost::system::system_error &) {
-        return false;
-    }
-}
-
 int main(int argc, char *argv[]) {
     namespace po = boost::program_options;
 
@@ -47,7 +33,6 @@ int main(int argc, char *argv[]) {
         ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
         ("tcp", "scan TCP ports")
-        ("udp", "scan UDP ports")
     ;
     // clang-format on
 
@@ -87,25 +72,17 @@ int main(int argc, char *argv[]) {
     }
 
     const bool tcpOption = vm.count("tcp");
-    const bool udpOption = vm.count("udp");
 
     std::vector<std::future<void>> futures;
     std::mutex mutex;
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
-        futures.emplace_back(std::async(std::launch::async, [showOption, tcpOption, udpOption, host, port, &mutex]() {
+        futures.emplace_back(std::async(std::launch::async, [showOption, tcpOption, host, port, &mutex]() {
             if (tcpOption) {
                 bool tcpPortStatus = isTCPPortOpen(host, port);
                 if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
                     std::lock_guard lock(mutex);
                     std::cout << "Port " << port << "/tcp is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
-                }
-            }
-            if (udpOption) {
-                bool udpPortStatus = isUDPPortOpen(host, port);
-                if ((showOption == "open" && udpPortStatus) || (showOption == "closed" && !udpPortStatus) || (showOption == "all")) {
-                    std::lock_guard lock(mutex);
-                    std::cout << "Port " << port << "/udp is " << (udpPortStatus ? "open" : "closed") << "." << std::endl;
                 }
             }
         }));
