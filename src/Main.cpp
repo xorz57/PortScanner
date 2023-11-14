@@ -27,6 +27,7 @@ bool isUDPPortOpen(const std::string &host, unsigned int port) {
         boost::asio::ip::udp::resolver resolver(io_context);
         boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, std::to_string(port));
         boost::asio::ip::udp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        boost::asio::connect(socket, endpoint_iterator);
         return true;
     } catch (const boost::system::system_error &) {
         return false;
