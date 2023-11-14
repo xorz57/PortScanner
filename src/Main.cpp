@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
                 bool tcpPortStatus = isTCPPortOpen(host, port);
                 if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
                     std::lock_guard lock(mutex);
-                    std::cout << "Port " << port << "/tcp is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
+                    std::cout << "Port " << port << "/" << protocolOption << " is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
                 }
             }
         }));
