@@ -1,6 +1,6 @@
 <h1 align="center">PortScanner</h1>
 
-```bash
+```
 Allowed options:
   --help                  display help message
   --host arg (=127.0.0.1) set host
@@ -11,7 +11,7 @@ Allowed options:
 
 ## Example
 
-```bash
+```
 ./PortScanner --host uoc.gr --show open
 Port 22 is open.
 Port 53 is open.
