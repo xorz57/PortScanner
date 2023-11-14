@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
-        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all] [--tcp] [--udp]" << std::endl;
         return 1;
     }
 
