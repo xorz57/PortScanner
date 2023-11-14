@@ -58,6 +58,12 @@ int main(int argc, char *argv[]) {
 
     const std::string host = vm["host"].as<std::string>();
 
+    const std::string protocol = vm["protocol"].as<std::string>();
+    if (protocol != "tcp" && protocol != "udp") {
+        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
+        return 1;
+    }
+
     const unsigned int beginPort = vm["begin-port"].as<unsigned int>();
     const unsigned int endPort = vm["end-port"].as<unsigned int>();
     if (beginPort > endPort || endPort > 65535) {
@@ -65,15 +71,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const std::string showOption = vm["show"].as<std::string>();
-    if (showOption != "open" && showOption != "closed" && showOption != "all") {
+    const std::string show = vm["show"].as<std::string>();
+    if (show != "open" && show != "closed" && show != "all") {
         std::cerr << "Error: Invalid value for --show. Use 'open', 'closed', or 'all'." << std::endl;
-        return 1;
-    }
-
-    const std::string protocolOption = vm["protocol"].as<std::string>();
-    if (protocolOption != "tcp" && protocolOption != "udp") {
-        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
         return 1;
     }
 
@@ -81,12 +81,12 @@ int main(int argc, char *argv[]) {
     std::mutex mutex;
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
-        futures.emplace_back(std::async(std::launch::async, [showOption, protocolOption, host, port, &mutex]() {
-            if (protocolOption == "tcp") {
-                bool tcpPortStatus = isTCPPortOpen(host, port);
-                if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
+        futures.emplace_back(std::async(std::launch::async, [show, protocol, host, port, &mutex]() {
+            if (protocol == "tcp") {
+                bool status = isTCPPortOpen(host, port);
+                if ((show == "open" && status) || (show == "closed" && !status) || (show == "all")) {
                     std::lock_guard lock(mutex);
-                    std::cout << "Port " << port << "/" << protocolOption << " is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
+                    std::cout << "Port " << port << "/" << protocol << " is " << (status ? "open" : "closed") << "." << std::endl;
                 }
             }
         }));
