@@ -6,15 +6,29 @@
 #include <mutex>
 #include <vector>
 
-bool isPortOpen(const std::string &host, unsigned int port) {
+bool isTCPPortOpen(const std::string &host, unsigned int port) {
     try {
-        using boost::asio::ip::tcp;
         boost::asio::io_context io_context;
-        tcp::socket socket(io_context);
-        tcp::resolver resolver(io_context);
-        tcp::resolver::query query(host, std::to_string(port));
-        tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        boost::asio::ip::tcp::socket socket(io_context);
+        boost::asio::ip::tcp::resolver resolver(io_context);
+        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
+        boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         boost::asio::connect(socket, endpoint_iterator);
+        return true;
+    } catch (const boost::system::system_error &) {
+        return false;
+    }
+}
+
+bool isUDPPortOpen(const std::string &host, unsigned int port) {
+    try {
+        boost::asio::io_context io_context;
+        boost::asio::ip::udp::socket socket(io_context);
+        boost::asio::ip::udp::resolver resolver(io_context);
+        boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, std::to_string(port));
+        boost::asio::ip::udp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        socket.open(boost::asio::ip::udp::v4());
+        socket.connect(*endpoint_iterator);
         return true;
     } catch (const boost::system::system_error &) {
         return false;
@@ -76,10 +90,10 @@ int main(int argc, char *argv[]) {
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
         futures.emplace_back(std::async(std::launch::async, [showOption, host, port, &mutex]() {
-            bool status = isPortOpen(host, port);
+            bool tcpPortStatus = isTCPPortOpen(host, port);
             std::lock_guard lock(mutex);
-            if ((showOption == "open" && status) || (showOption == "closed" && !status) || (showOption == "all")) {
-                std::cout << "Port " << port << " is " << (status ? "open" : "closed") << "." << std::endl;
+            if ((showOption == "open" && tcpPortStatus) || (showOption == "closed" && !tcpPortStatus) || (showOption == "all")) {
+                std::cout << "Port " << port << " is " << (tcpPortStatus ? "open" : "closed") << "." << std::endl;
             }
         }));
     }
