@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-bool isPortOpen(const std::string &host, unsigned short port) {
+bool isPortOpen(const std::string &host, unsigned int port) {
     try {
         using boost::asio::ip::tcp;
         boost::asio::io_context io_context;
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
-        ("begin-port", po::value<unsigned short>()->default_value(0), "set begin-port")
-        ("end-port", po::value<unsigned short>()->default_value(65535), "set end-port")
+        ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
+        ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
 
     const std::string host = vm["host"].as<std::string>();
 
-    const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
-    const unsigned short endPort = vm["end-port"].as<unsigned short>();
+    const unsigned int beginPort = vm["begin-port"].as<unsigned int>();
+    const unsigned int endPort = vm["end-port"].as<unsigned int>();
     if (beginPort > endPort || endPort > 65535) {
         std::cerr << "Error: Invalid port range. begin-port should be less than or equal to end-port, and both should be in the range [0, 65535]." << std::endl;
         return 1;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     std::vector<std::future<void>> futures;
     std::mutex mutex;
 
-    for (unsigned short port = beginPort; port <= endPort; ++port) {
+    for (unsigned int port = beginPort; port <= endPort; ++port) {
         futures.emplace_back(std::async(std::launch::async, [showOption, host, port, &mutex]() {
             bool status = isPortOpen(host, port);
             std::lock_guard lock(mutex);
