@@ -29,10 +29,10 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
+        ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
         ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
         ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
-        ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
     ;
     // clang-format on
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
-        std::cerr << "Usage: " << argv[0] << " --host <host> --begin-port <begin-port> --end-port <end-port> [--show open/closed/all] [--protocol tcp/udp]" << std::endl;
+        std::cerr << desc << std::endl;
         return 1;
     }
 
