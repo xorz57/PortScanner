@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-bool isTCPPortOpen(const std::string &host, unsigned int port) {
+bool IsTCPPortOpen(const std::string &host, unsigned int port) {
     try {
         boost::asio::io_context io_context;
         boost::asio::ip::tcp::socket socket(io_context);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     for (unsigned int port = beginPort; port <= endPort; ++port) {
         futures.emplace_back(std::async(std::launch::async, [show, protocol, host, port, &mutex]() {
             if (protocol == "tcp") {
-                bool status = isTCPPortOpen(host, port);
+                bool status = IsTCPPortOpen(host, port);
                 if ((show == "open" && status) || (show == "closed" && !status) || (show == "all")) {
                     std::lock_guard lock(mutex);
                     std::cout << "Port " << port << "/" << protocol << " is " << (status ? "open" : "closed") << "." << std::endl;
