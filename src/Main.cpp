@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
         ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
         ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
-        ("show", po::value<std::string>()->default_value("all"), "display only 'open', 'closed', or 'all' ports")
+        ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
 
