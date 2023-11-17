@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     std::mutex mutex;
 
     for (unsigned int port = beginPort; port <= endPort; ++port) {
-        futures.emplace_back(std::async(std::launch::async, [show, protocol, host, port, &mutex]() {
+        futures.emplace_back(std::async(std::launch::async, [show, protocol, host, port, &mutex]() -> void {
             if (protocol == "tcp") {
                 bool status = IsTCPPortOpen(host, port);
                 if ((show == "open" && status) || (show == "closed" && !status) || (show == "all")) {
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
         }));
     }
 
-    for (const auto &future: futures) {
+    for (const std::future<void> &future: futures) {
         future.wait();
     }
 
