@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
         ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
-        ("begin-port", po::value<unsigned short>()->default_value(0), "set begin-port")
-        ("end-port", po::value<unsigned short>()->default_value(65535), "set end-port")
+        ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
+        ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
@@ -48,8 +48,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const unsigned short beginPort = vm["begin-port"].as<unsigned short>();
-    const unsigned short endPort = vm["end-port"].as<unsigned short>();
+    const unsigned int beginPort = vm["begin-port"].as<unsigned int>();
+    const unsigned int endPort = vm["end-port"].as<unsigned int>();
     if (beginPort > endPort || endPort > 65535) {
         std::cerr << "Error: Invalid port range. begin-port should be less than or equal to end-port, and both should be in the range [0, 65535]." << std::endl;
         return 1;
@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
     boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
     if (protocol == "tcp") {
-        std::map<unsigned short, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
-        for (unsigned short port = beginPort; port < endPort; port++) {
+        std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
+        for (unsigned int port = beginPort; port <= endPort; port++) {
             auto s = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
             auto endpoint = boost::asio::ip::tcp::endpoint(endpoint_iterator->endpoint().address(), port);
             s->async_connect(endpoint, [show, protocol, port](const boost::system::error_code& error) {
