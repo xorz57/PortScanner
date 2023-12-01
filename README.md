@@ -13,24 +13,13 @@ Allowed options:
 ## Example
 
 ```
-./PortScanner --host uoc.gr
+./PortScanner --host boost.org
+Port 25/tcp is open.
 Port 22/tcp is open.
-Port 53/tcp is open.
-Port 111/tcp is open.
-Port 389/tcp is open.
-Port 409/tcp is open.
-Port 656/tcp is open.
-Port 636/tcp is open.
-Port 2000/tcp is open.
-Port 3998/tcp is open.
-Port 3999/tcp is open.
-Port 5060/tcp is open.
-Port 21162/tcp is open.
-Port 21163/tcp is open.
-Port 41314/tcp is open.
-Port 43917/tcp is open.
-Port 47603/tcp is open.
-Port 52116/tcp is open.
+Port 80/tcp is open.
+Port 443/tcp is open.
+Port 587/tcp is open.
+Port 8080/tcp is open.
 ```
 
 ## Dependencies
