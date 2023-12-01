@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <sstream>
 
 int main(int argc, char *argv[]) {
     namespace po = boost::program_options;
@@ -13,9 +14,8 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
+        ("port", po::value<std::string>()->default_value("0"), "set port range in the format 'begin[:end]'")
         ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
-        ("begin-port", po::value<unsigned int>()->default_value(0), "set begin-port")
-        ("end-port", po::value<unsigned int>()->default_value(65535), "set end-port")
         ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
@@ -35,23 +35,36 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    if (!vm.count("host") || !vm.count("begin-port") || !vm.count("end-port")) {
+    if (!vm.count("host") || !vm.count("port")) {
         std::cerr << desc << std::endl;
         return 1;
     }
 
     const std::string host = vm["host"].as<std::string>();
 
-    const std::string protocol = vm["protocol"].as<std::string>();
-    if (protocol != "tcp" && protocol != "udp") {
-        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
+    const std::string portRange = vm["port"].as<std::string>();
+    unsigned int portBegin, portEnd;
+
+    std::size_t colonPos = portRange.find(':');
+    if (colonPos != std::string::npos) {
+        std::string beginStr = portRange.substr(0, colonPos);
+        std::string endStr = portRange.substr(colonPos + 1);
+
+        std::istringstream(beginStr) >> portBegin;
+        std::istringstream(endStr) >> portEnd;
+    } else {
+        std::istringstream(portRange) >> portBegin;
+        portEnd = portBegin;
+    }
+
+    if (portBegin > portEnd || portBegin < 0 || portBegin > 65535 || portEnd < 0 || portEnd > 65535) {
+        std::cerr << "Error: Invalid port range." << std::endl;
         return 1;
     }
 
-    const unsigned int beginPort = vm["begin-port"].as<unsigned int>();
-    const unsigned int endPort = vm["end-port"].as<unsigned int>();
-    if (beginPort > endPort || endPort > 65535) {
-        std::cerr << "Error: Invalid port range. begin-port should be less than or equal to end-port, and both should be in the range [0, 65535]." << std::endl;
+    const std::string protocol = vm["protocol"].as<std::string>();
+    if (!(protocol == "tcp" || protocol == "udp")) {
+        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
         return 1;
     }
 
@@ -69,17 +82,17 @@ int main(int argc, char *argv[]) {
 
     if (protocol == "tcp") {
         std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
-        for (unsigned int port = beginPort; port <= endPort; port++) {
+        for (unsigned int port = portBegin; port <= portEnd; port++) {
             auto s = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-            auto endpoint = boost::asio::ip::tcp::endpoint(endpoint_iterator->endpoint().address(), port);
-            s->async_connect(endpoint, [show, protocol, port](const boost::system::error_code& error) {
+            boost::asio::ip::tcp::endpoint peer_endpoint(endpoint_iterator->endpoint().address(), port);
+            s->async_connect(peer_endpoint, [port, protocol, show](const boost::system::error_code& error)-> void {
                 if (!error) {
                     if (show != "closed") {
-                        std::cout << "Port " << port << "/" << protocol << " is " << "open" << "." << std::endl;
+                        std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
                     }
                 } else {
                     if (show != "open") {
-                        std::cout << "Port " << port << "/" << protocol << " is " << "closed" << "." << std::endl;
+                        std::cout << "Port " << port << "/" << protocol << " is closed." << std::endl;
                     }
                 }
             });

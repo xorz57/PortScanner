@@ -1,18 +1,17 @@
 <h1 align="center">PortScanner</h1>
 
-```
+```bash
 Allowed options:
   --help                  display help message
   --host arg (=127.0.0.1) set host
+  --port arg (=0)         set port range in the format 'begin[:end]'
   --protocol arg (=tcp)   set protocol (tcp/udp)
-  --begin-port arg (=0)   set begin-port
-  --end-port arg (=65535) set end-port
-  --show arg (=open)       display only 'open', 'closed', or 'all' ports
+  --show arg (=open)      display only 'open', 'closed', or 'all' ports
 ```
 
 ## Example
 
-```
+```bash
 ./PortScanner --host boost.org
 Port 25/tcp is open.
 Port 22/tcp is open.
