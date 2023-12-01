@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
-        ("port", po::value<std::string>()->default_value("0"), "set port range in the format 'begin[:end]'")
+        ("port", po::value<std::string>()->default_value("0:65535"), "set port range in the format 'begin[:end]'")
         ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
         ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
@@ -35,16 +35,14 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    if (!vm.count("host") || !vm.count("port")) {
+    if (!vm.count("host")) {
         std::cerr << desc << std::endl;
         return 1;
     }
-
     const std::string host = vm["host"].as<std::string>();
 
     const std::string portRange = vm["port"].as<std::string>();
     unsigned int portBegin, portEnd;
-
     std::size_t colonPos = portRange.find(':');
     if (colonPos != std::string::npos) {
         std::string beginStr = portRange.substr(0, colonPos);
