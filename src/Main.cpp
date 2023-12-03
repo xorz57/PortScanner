@@ -73,28 +73,29 @@ int main(int argc, char *argv[]) {
 
     if (protocol == "tcp") {
         boost::asio::io_context io_service;
-
         std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
         for (unsigned int port = portBegin; port <= portEnd; port++) {
             boost::asio::ip::tcp::resolver resolver(io_service);
             boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-            boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-
-            auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-            socket->async_connect(iterator->endpoint(), [port, protocol, show](const boost::system::error_code& error)-> void {
-                if (!error) {
-                    if (show != "closed") {
-                        std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
+            try {
+                boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+                auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
+                socket->async_connect(iterator->endpoint(), [port, protocol, show](const boost::system::error_code &error) -> void {
+                    if (!error) {
+                        if (show != "closed") {
+                            std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
+                        }
+                    } else {
+                        if (show != "open") {
+                            std::cout << "Port " << port << "/" << protocol << " is closed." << std::endl;
+                        }
                     }
-                } else {
-                    if (show != "open") {
-                        std::cout << "Port " << port << "/" << protocol << " is closed." << std::endl;
-                    }
-                }
-            });
-            sockets.emplace(port, std::move(socket));
+                });
+                sockets.emplace(port, std::move(socket));
+            } catch (const boost::system::system_error &e) {
+                std::cerr << "Unknown Host" << std::endl;
+            }
         }
-
         io_service.run();
     }
 
