@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
-        ("port", po::value<std::string>()->default_value("0:65535"), "set port range in the format 'begin[:end]'")
+        ("port", po::value<std::string>()->default_value("0-65535"), "set port range in the format 'begin[-end]'")
         ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
         ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     unsigned int portBegin = 0;
     unsigned int portEnd = 0;
 
-    std::size_t pos = portRange.find(':');
+    std::size_t pos = portRange.find('-');
     if (pos != std::string::npos) {
         std::string portBeginString = portRange.substr(0, pos);
         std::string portEndString = portRange.substr(pos + 1);
