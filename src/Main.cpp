@@ -93,7 +93,8 @@ int main(int argc, char *argv[]) {
                 });
                 sockets.emplace(port, std::move(socket));
             } catch (const boost::system::system_error &e) {
-                std::cerr << "Unknown Host" << std::endl;
+                std::cerr << "Error: Failed resolving " << host << "." << std::endl;
+                return 1;
             }
         }
         io_service.run();
