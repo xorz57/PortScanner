@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
                 });
                 sockets.emplace(port, std::move(socket));
             } catch (const boost::system::system_error &e) {
-                std::cerr << "Error: Failed resolving " << host << "." << std::endl;
+                std::cerr << "Error: Failed to resolve host: " << host << "." << std::endl;
                 return 1;
             }
         }
