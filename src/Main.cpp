@@ -81,19 +81,13 @@ int main(int argc, char *argv[]) {
                 boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
                 auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
                 socket->async_connect(iterator->endpoint(), [port, protocol, show](const boost::system::error_code &error) -> void {
-                    if (!error) {
-                        if (show != "closed") {
-                            std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
-                        }
-                    } else {
-                        if (show != "open") {
-                            std::cout << "Port " << port << "/" << protocol << " is closed." << std::endl;
-                        }
+                    if ((error && show == "closed") || (!error && show == "open")) {
+                        std::cout << "Port " << port << "/" << protocol << " is " << (error ? "closed" : "open") << "." << std::endl;
                     }
                 });
                 sockets.emplace(port, std::move(socket));
             } catch (const boost::system::system_error &e) {
-                std::cerr << "Error: Failed to resolve host: " << host << "." << std::endl;
+                std::cerr << e.what() << std::endl;
                 return 1;
             }
         }
