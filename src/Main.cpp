@@ -76,13 +76,13 @@ int main(int argc, char *argv[]) {
 
         boost::asio::ip::tcp::resolver resolver(io_service);
         boost::asio::ip::tcp::resolver::query query(host, "0");
-        boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
         std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
         for (unsigned int port = portBegin; port <= portEnd; port++) {
             auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-            boost::asio::ip::tcp::endpoint peer_endpoint(endpoint_iterator->endpoint().address(), port);
-            socket->async_connect(peer_endpoint, [&sockets, port, protocol, show](const boost::system::error_code& error)-> void {
+            boost::asio::ip::tcp::endpoint endpoint(iterator->endpoint().address(), port);
+            socket->async_connect(endpoint, [&sockets, port, protocol, show](const boost::system::error_code& error)-> void {
                 if (!error) {
                     if (show != "closed") {
                         std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
