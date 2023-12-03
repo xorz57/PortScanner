@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         for (unsigned int port = portBegin; port <= portEnd; port++) {
             auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
             boost::asio::ip::tcp::endpoint peer_endpoint(endpoint_iterator->endpoint().address(), port);
-            socket->async_connect(peer_endpoint, [&sockets, port, protocol, show](const boost::system::error_code& error)-> void {
+            socket->async_connect(peer_endpoint, [port, protocol, show](const boost::system::error_code& error)-> void {
                 if (!error) {
                     if (show != "closed") {
                         std::cout << "Port " << port << "/" << protocol << " is open." << std::endl;
@@ -92,7 +92,6 @@ int main(int argc, char *argv[]) {
                         std::cout << "Port " << port << "/" << protocol << " is closed." << std::endl;
                     }
                 }
-                sockets.erase(port);
             });
             sockets.emplace(port, std::move(socket));
         }
