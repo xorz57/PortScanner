@@ -80,7 +80,6 @@ int main(int argc, char *argv[]) {
             try {
                 boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
                 auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-                if (!socket->is_open()) return 1;
                 socket->async_connect(iterator->endpoint(), [port, protocol, show](const boost::system::error_code &error) -> void {
                     if ((error && show == "closed") || (!error && show == "open")) {
                         std::cout << "Port " << port << "/" << protocol << " is " << (error ? "closed" : "open") << "." << std::endl;
