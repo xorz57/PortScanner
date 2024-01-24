@@ -1,7 +1,5 @@
 # PortScanner
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml/badge.svg)](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml)
 [![Build](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml/badge.svg)](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml)
 
 ## Usage
