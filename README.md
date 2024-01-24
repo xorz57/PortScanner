@@ -1,4 +1,8 @@
-<h1 align="center">PortScanner</h1>
+# PortScanner
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## Usage
 
 ```bash
 Allowed options:
