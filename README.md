@@ -2,8 +2,6 @@
 
 [![Build](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml/badge.svg)](https://github.com/xorz57/PortScanner/actions/workflows/Build.yml)
 
-![image](https://github.com/xorz57/PortScanner/assets/84932056/de8c751c-b221-40e0-8fdc-683fa70b9331)
-
 ## Usage
 
 ```bash
