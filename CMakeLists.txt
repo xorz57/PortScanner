@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
+
+cmake_policy(SET CMP0091 NEW)
+
 project(PortScanner)
 
 set(CMAKE_CXX_STANDARD 20)
