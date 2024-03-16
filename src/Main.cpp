@@ -15,7 +15,6 @@ int main(int argc, char *argv[]) {
         ("help", "display help message")
         ("host", po::value<std::string>()->default_value("127.0.0.1"), "set host")
         ("port", po::value<std::string>()->default_value("0-1024"), "set port range in the format 'begin[-end]'")
-        ("protocol", po::value<std::string>()->default_value("tcp"), "set protocol (tcp/udp)")
         ("show", po::value<std::string>()->default_value("open"), "display only 'open', 'closed', or 'all' ports")
     ;
     // clang-format on
@@ -59,40 +58,32 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const std::string protocol = vm["protocol"].as<std::string>();
-    if (!(protocol == "tcp" || protocol == "udp")) {
-        std::cerr << "Error: Invalid value for --protocol. Use 'tcp' or 'udp'." << std::endl;
-        return 1;
-    }
-
     const std::string show = vm["show"].as<std::string>();
     if (show != "open" && show != "closed" && show != "all") {
         std::cerr << "Error: Invalid value for --show. Use 'open', 'closed', or 'all'." << std::endl;
         return 1;
     }
 
-    if (protocol == "tcp") {
-        boost::asio::io_context io_service;
-        std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
-        for (unsigned int port = portBegin; port <= portEnd; port++) {
-            boost::asio::ip::tcp::resolver resolver(io_service);
-            boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
-            try {
-                boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-                auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
-                socket->async_connect(iterator->endpoint(), [port, protocol, show](const boost::system::error_code &error) -> void {
-                    if ((error && show == "closed") || (!error && show == "open")) {
-                        std::cout << "Port " << port << "/" << protocol << " is " << (error ? "closed" : "open") << "." << std::endl;
-                    }
-                });
-                sockets.emplace(port, std::move(socket));
-            } catch (const boost::system::system_error &e) {
-                std::cerr << e.what() << std::endl;
-                return 1;
-            }
+    boost::asio::io_context io_service;
+    std::map<unsigned int, std::unique_ptr<boost::asio::ip::tcp::socket>> sockets;
+    for (unsigned int port = portBegin; port <= portEnd; port++) {
+        boost::asio::ip::tcp::resolver resolver(io_service);
+        boost::asio::ip::tcp::resolver::query query(host, std::to_string(port));
+        try {
+            boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+            auto socket = std::make_unique<boost::asio::ip::tcp::socket>(io_service);
+            socket->async_connect(iterator->endpoint(), [port, show](const boost::system::error_code &error) -> void {
+                if ((error && show == "closed") || (!error && show == "open")) {
+                    std::cout << "Port " << port << "/tcp is " << (error ? "closed" : "open") << "." << std::endl;
+                }
+            });
+            sockets.emplace(port, std::move(socket));
+        } catch (const boost::system::system_error &e) {
+            std::cerr << e.what() << std::endl;
+            return 1;
         }
-        io_service.run();
     }
+    io_service.run();
 
     return 0;
 }

@@ -9,7 +9,6 @@ Allowed options:
   --help                  display help message
   --host arg (=127.0.0.1) set host
   --port arg (=0-1024)    set port range in the format 'begin[-end]'
-  --protocol arg (=tcp)   set protocol (tcp/udp)
   --show arg (=open)      display only 'open', 'closed', or 'all' ports
 ```
 
